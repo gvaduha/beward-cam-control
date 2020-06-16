@@ -1,0 +1,23 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "beward-cam-control", "beward-cam-control.csproj", "{222940FF-FAB1-412F-925F-CB889B2EC075}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{222940FF-FAB1-412F-925F-CB889B2EC075}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{222940FF-FAB1-412F-925F-CB889B2EC075}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{222940FF-FAB1-412F-925F-CB889B2EC075}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{222940FF-FAB1-412F-925F-CB889B2EC075}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AF80EEEA-A53C-4E76-8DD5-CAC211985E7A}
+	EndGlobalSection
+EndGlobal
