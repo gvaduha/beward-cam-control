@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "beward-cam-control": {
+      "commandName": "Project",
+      "commandLineArgs": "-h svcam1 -u admin -p admin -t SV -c VideoGeneral"
+    }
+  }
+}
