@@ -337,10 +337,11 @@ namespace gvaduha.beward
             return result;
         }
 
-        public async Task<string> SetSectionAsync(CamCommand command, string data)
+        public async Task<string> SetSectionAsync(CamCommand command, string[] data)
         {
+            var reqdata = string.Join("&", data);
             var reqTraits = nameRequestMap[command];
-            var uri = new Uri(_baseUri, $"{reqTraits.Script}?action=set.{reqTraits.Command}");
+            var uri = new Uri(_baseUri, $"{reqTraits.Script}?action=set.{reqTraits.Command}&{reqdata}");
             Debug.WriteLine(uri);
             var result = await _httpClient.GetStringAsync(uri);
             return result;

@@ -1,8 +1,12 @@
 {
   "profiles": {
-    "beward-cam-control": {
+    "get test": {
       "commandName": "Project",
       "commandLineArgs": "-h svcam1 -u admin -p admin -t SV -c VideoGeneral"
+    },
+    "get | set test": {
+      "commandName": "Executable",
+      "commandLineArgs": "$(executablePath) -h svcam1 -u admin -p admin -t SV -c VideoGeneral | $(executablePath) -h svcam1 -u admin -p admin -t SV -c VideoGeneral --set"
     }
   }
 }

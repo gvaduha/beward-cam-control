@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 
@@ -6,6 +9,12 @@ namespace gvaduha.beward
 {
     class Program
     {
+        enum CamType
+        {
+            SV,
+            BD
+        }
+
         static async Task<int> Main(string[] args)
         {
             var cla = new CommandLineApplication(throwOnUnexpectedArg: false);
@@ -17,16 +26,8 @@ namespace gvaduha.beward
             var cmdpassword = cla.Option("-p | --password", "authentication user password", CommandOptionType.SingleValue);
             var cmdcamtype = cla.Option("-t | --camtype", "SV|BD (SV only supported)", CommandOptionType.SingleValue);
             var cmdcommand = cla.Option("-c | --command", "cam command, see -l", CommandOptionType.SingleValue);
-            var cmdset = cla.Option("-S | --set", "use for set value with command", CommandOptionType.SingleValue);
-
-            cla.Execute(args);
-
-            if (cmdlist.HasValue())
-            {
-                Console.WriteLine($"SV series commands: {Environment.NewLine}" +
-                    string.Join(Environment.NewLine, Enum.GetNames(typeof(SVseriesCam.CamCommand))));
-                return 0;
-            }
+            var cmdset = cla.Option("-S | --set", "use for set value with command", CommandOptionType.NoValue);
+            //var cmddata = cla.Option("--", "data for set command", CommandOptionType.MultipleValue);
 
             SVseriesCam cam;
             bool setCommand;
@@ -34,6 +35,15 @@ namespace gvaduha.beward
 
             try
             {
+                cla.Execute(args);
+
+                if (cmdlist.HasValue())
+                {
+                    Console.WriteLine($"SV series commands: {Environment.NewLine}" +
+                        string.Join(Environment.NewLine, Enum.GetNames(typeof(SVseriesCam.CamCommand))));
+                    return 0;
+                }
+
                 var scheme = cmdscheme.HasValue() ? cmdscheme.Value() : "http";
                 var host = cmdhost.Value();
                 var port = cmdport.HasValue() ? Convert.ToInt32(cmdport.Value()) : 80;
@@ -58,7 +68,23 @@ namespace gvaduha.beward
                 return -1;
             }
 
-            Console.WriteLine(await cam.GetSectionAsync(command));
+            if (setCommand)
+            {
+                string line;
+                var data = new List<string>();
+                using var stdin = new StreamReader(Console.OpenStandardInput());
+                while ((line = stdin.ReadLine()) != null)
+                {
+                    //ignore [XXX] headers, ; comments and empty lines
+                    var rgx = new Regex(@"^\s*\[[ 0-9a-zA-Z_\-\.]+\]\s*$|^;.*$|^\s*$");
+                    if (!rgx.IsMatch(line))
+                        data.Add(line);
+                }
+                Console.WriteLine(await cam.SetSectionAsync(command, data.ToArray()));
+            }
+            else
+                Console.WriteLine(await cam.GetSectionAsync(command));
+
             return 0;
         }
     }
