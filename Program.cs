@@ -29,9 +29,9 @@ namespace gvaduha.beward
             var cmdset = cla.Option("-S | --set", "use for set value with command", CommandOptionType.NoValue);
             //var cmddata = cla.Option("--", "data for set command", CommandOptionType.MultipleValue);
 
-            SVseriesCam cam;
+            BewardCam cam;
             bool setCommand;
-            SVseriesCam.CamCommand command;
+            string command;
 
             try
             {
@@ -41,6 +41,8 @@ namespace gvaduha.beward
                 {
                     Console.WriteLine($"SV series commands: {Environment.NewLine}" +
                         string.Join(Environment.NewLine, Enum.GetNames(typeof(SVseriesCam.CamCommand))));
+                    Console.WriteLine($"BD series commands: {Environment.NewLine}" +
+                        string.Join(Environment.NewLine, Enum.GetNames(typeof(BDseriesCam.CamCommand))));
                     return 0;
                 }
 
@@ -50,10 +52,10 @@ namespace gvaduha.beward
                 var user = cmduser.HasValue() ? cmduser.Value() : null;
                 var password = cmdpassword.HasValue() ? cmdpassword.Value() : null;
                 var camtype = cmdcamtype.Value().ToUpper();
-                command = (SVseriesCam.CamCommand)Enum.Parse(typeof(SVseriesCam.CamCommand), cmdcommand.Value());
+                command = cmdcommand.Value();
                 setCommand = cmdset.HasValue();
 
-                cam = new SVseriesCam(new UriBuilder(scheme, host, port).Uri, user, password);
+                cam = BewardCamFactory.Create(camtype, new UriBuilder(scheme, host, port).Uri, user, password);
             }
             catch (Exception)
             {
@@ -63,7 +65,8 @@ namespace gvaduha.beward
                     "Examples:{Environment.NewLine}" +
                     $"{module} -l{Environment.NewLine}" +
                     $"{module} -h svcam1 -t SV -c VideoGeneral{Environment.NewLine}" +
-                    $"{module} -h svcam1 -t SV -c VideoGeneral -d set -- [VIDEO_GENERAL]..."
+                    $"{module} -h svcam1 -t SV -c VideoGeneral -d set -- [VIDEO_GENERAL]..." +
+                    $"{module} -h bdcam1 -t SV -c Image{Environment.NewLine}"
                     );
                 return -1;
             }

@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gvaduha.beward
@@ -224,13 +221,23 @@ namespace gvaduha.beward
     /// set.notify
     /// audio.fcgi
     /// </summary>
-    public class SVseriesCam
+    public class SVseriesCam : BewardCam
     {
-        public static class OutputFormat
+        public static class CgiScripts
         {
-            public const string Inf = "inf";
-            public const string Script = "";
+            public static string Admin = "/cgi-bin/admin/admin.cgi";
+            public static string Operator = "/cgi-bin/operator/operator.cgi";
+            public static string CamProfile = "/cgi-bin/camctrl_profile.cgi";
+            public static string Update = "/update.cgi";
+            public static string Viewer = "/cgi-bin/viewer/viewer.cgi";
+            public static string FileList = "/cgi-bin/operator/filelist.cgi";
+            public static string Recycle = "/cgi-bin/operator/recycle.cgi";
+            public static string DataLoader = "/dataloader.cgi";
+            public static string Snapshot = "/cgi-bin/operator/snapshot.cgi"; // or "/snapshot.cgi"
+            public static string Notify = "/cgi-bin/notify.fcgi";
+            public static string Audio = "/cgi-bin/audio.fcgi";
         }
+
         public enum CamCommand
         {
             NetworkGeneral,
@@ -262,71 +269,36 @@ namespace gvaduha.beward
             StorageFormat,
         }
 
-        public class RequestTraits
+        private static Dictionary<CamCommand, RequestTraits> nameRequestMap = new Dictionary<CamCommand, RequestTraits>
         {
-            public static string AdminScript = "/cgi-bin/admin/admin.cgi";
-            public static string OperatorScript = "/cgi-bin/operator/operator.cgi";
-            public static string CamProfileScript = "/cgi-bin/camctrl_profile.cgi";
-            public static string UpdateScript = "/update.cgi";
-            public static string ViewerScript = "/cgi-bin/viewer/viewer.cgi";
-            public static string FileListScript = "/cgi-bin/operator/filelist.cgi";
-            public static string RecycleScript = "/cgi-bin/operator/recycle.cgi";
-            public static string DataLoaderScript = "/dataloader.cgi";
-            public static string SnapshotScript = "/cgi-bin/operator/snapshot.cgi"; // or "/snapshot.cgi"
-            public static string NotifyScript = "/cgi-bin/notify.fcgi";
-            public static string AudioScript = "/cgi-bin/audio.fcgi";
-
-            public string Script;
-            public string Command;
-
-            public RequestTraits(string script, string command)
-            {
-                Script = script;
-                Command = command;
-            }
-        }
-
-        public static Dictionary<CamCommand, RequestTraits> nameRequestMap = new Dictionary<CamCommand, RequestTraits>
-        {
-            {CamCommand.NetworkGeneral, new RequestTraits(RequestTraits.AdminScript, "network.general") },
-            {CamCommand.NetworkAdvanced, new RequestTraits(RequestTraits.AdminScript, "network.advanced") },
-            {CamCommand.NetworkDDNS, new RequestTraits(RequestTraits.AdminScript, "network.ddns") },
-            {CamCommand.NetworkIpChange, new RequestTraits(RequestTraits.AdminScript, "network.ipchange") },
-            {CamCommand.NetworkWireless, new RequestTraits(RequestTraits.AdminScript, "network.wireless") },
-            {CamCommand.NetworkRtsp, new RequestTraits(RequestTraits.AdminScript, "network.rtsp") },
-            {CamCommand.SystemInfo, new RequestTraits(RequestTraits.AdminScript, "system.information") },
-            {CamCommand.SystemDatetime, new RequestTraits(RequestTraits.AdminScript, "system.datetime") },
-            {CamCommand.SystemUser, new RequestTraits(RequestTraits.AdminScript, "system.user") },
-            {CamCommand.VideoGeneral, new RequestTraits(RequestTraits.OperatorScript, "video.general") },
-            {CamCommand.VideoResolutions, new RequestTraits(RequestTraits.OperatorScript, "video.resolutions") },
-            {CamCommand.VideoBitrates, new RequestTraits(RequestTraits.OperatorScript, "video.bitrates") },
-            {CamCommand.VideoParam, new RequestTraits(RequestTraits.OperatorScript, "video.parameter") },
-            {CamCommand.VideoAdvanced, new RequestTraits(RequestTraits.OperatorScript, "video.advanced") },
-            {CamCommand.FishVideoGeneral, new RequestTraits(RequestTraits.OperatorScript, "fishvideo.general") },
-            {CamCommand.FishVideoResolutions, new RequestTraits(RequestTraits.OperatorScript, "fishvideo.resolutions") },
-            {CamCommand.FishVideoBitrates, new RequestTraits(RequestTraits.OperatorScript, "fishvideo.bitrates") },
-            {CamCommand.FishVideoAdvanced, new RequestTraits(RequestTraits.OperatorScript, "fishvideo.advanced") },
-            {CamCommand.CameraSetting, new RequestTraits(RequestTraits.OperatorScript, "camera.setting") },
-            {CamCommand.CameraBwMode, new RequestTraits(RequestTraits.OperatorScript, "camera.settings.bwmode") },
-            {CamCommand.CameraMaxGain, new RequestTraits(RequestTraits.OperatorScript, "camera.settings.maxgain") },
-            {CamCommand.CameraDaynight, new RequestTraits(RequestTraits.OperatorScript, "camera.daynight") },
-            {CamCommand.CameraMask, new RequestTraits(RequestTraits.OperatorScript, "camera.mask") },
+            {CamCommand.NetworkGeneral, new RequestTraits(CgiScripts.Admin, "network.general") },
+            {CamCommand.NetworkAdvanced, new RequestTraits(CgiScripts.Admin, "network.advanced") },
+            {CamCommand.NetworkDDNS, new RequestTraits(CgiScripts.Admin, "network.ddns") },
+            {CamCommand.NetworkIpChange, new RequestTraits(CgiScripts.Admin, "network.ipchange") },
+            {CamCommand.NetworkWireless, new RequestTraits(CgiScripts.Admin, "network.wireless") },
+            {CamCommand.NetworkRtsp, new RequestTraits(CgiScripts.Admin, "network.rtsp") },
+            {CamCommand.SystemInfo, new RequestTraits(CgiScripts.Admin, "system.information") },
+            {CamCommand.SystemDatetime, new RequestTraits(CgiScripts.Admin, "system.datetime") },
+            {CamCommand.SystemUser, new RequestTraits(CgiScripts.Admin, "system.user") },
+            {CamCommand.VideoGeneral, new RequestTraits(CgiScripts.Operator, "video.general") },
+            {CamCommand.VideoResolutions, new RequestTraits(CgiScripts.Operator, "video.resolutions") },
+            {CamCommand.VideoBitrates, new RequestTraits(CgiScripts.Operator, "video.bitrates") },
+            {CamCommand.VideoParam, new RequestTraits(CgiScripts.Operator, "video.parameter") },
+            {CamCommand.VideoAdvanced, new RequestTraits(CgiScripts.Operator, "video.advanced") },
+            {CamCommand.FishVideoGeneral, new RequestTraits(CgiScripts.Operator, "fishvideo.general") },
+            {CamCommand.FishVideoResolutions, new RequestTraits(CgiScripts.Operator, "fishvideo.resolutions") },
+            {CamCommand.FishVideoBitrates, new RequestTraits(CgiScripts.Operator, "fishvideo.bitrates") },
+            {CamCommand.FishVideoAdvanced, new RequestTraits(CgiScripts.Operator, "fishvideo.advanced") },
+            {CamCommand.CameraSetting, new RequestTraits(CgiScripts.Operator, "camera.setting") },
+            {CamCommand.CameraBwMode, new RequestTraits(CgiScripts.Operator, "camera.settings.bwmode") },
+            {CamCommand.CameraMaxGain, new RequestTraits(CgiScripts.Operator, "camera.settings.maxgain") },
+            {CamCommand.CameraDaynight, new RequestTraits(CgiScripts.Operator, "camera.daynight") },
+            {CamCommand.CameraMask, new RequestTraits(CgiScripts.Operator, "camera.mask") },
         };
 
-        private HttpClient _httpClient;
-        private Uri _baseUri;
-
         public SVseriesCam(Uri baseUri, string user, string password)
-        {
-            _baseUri = baseUri;
-            _httpClient = new HttpClient();
-            if (!string.IsNullOrEmpty(user))
-            {
-                _httpClient.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Basic",
-                            Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(string.Format("{0}:{1}", user, password))));
-            }
-        }
+            : base(baseUri, user, password)
+        {}
 
         public async Task<string> GetSectionAsync(CamCommand command, string format = OutputFormat.Inf)
         {
@@ -344,7 +316,20 @@ namespace gvaduha.beward
             var uri = new Uri(_baseUri, $"{reqTraits.Script}?action=set.{reqTraits.Command}&{reqdata}");
             Debug.WriteLine(uri);
             var result = await _httpClient.GetStringAsync(uri);
+
             return result;
+        }
+
+        public override Task<string> GetSectionAsync(string strCommand, string format = OutputFormat.Inf)
+        {
+            var command = TryParseCommand<CamCommand>(strCommand);
+            return GetSectionAsync(command, format);
+        }
+
+        public override Task<string> SetSectionAsync(string strCommand, string[] data)
+        {
+            var command = TryParseCommand<CamCommand>(strCommand);
+            return SetSectionAsync(command, data);
         }
     }
 }
