@@ -7,6 +7,10 @@ Read and write configuration parameters to Beward IP cameras
 
 ## Examples:
 Read from camera to file
+```
   ./beward-cam-control -h svcam1 -u admin -p admin -t SV -c VideoGeneral >> vidgen.inf
+```
 Write from file to camera
+```
   cat vidgen.inf | ./beward-cam-control -h svcam1 -u admin -p admin -t SV -c VideoGeneral --set
+```
