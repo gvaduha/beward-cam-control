@@ -3,7 +3,7 @@ Read and write configuration parameters to Beward IP cameras
 
 ## Supported
 * SV series
-* BD series (postponed)
+* BD series
 
 ## Examples:
 Read from camera to file
