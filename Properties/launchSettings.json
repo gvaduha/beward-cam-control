@@ -2,7 +2,7 @@
   "profiles": {
     "get BD series test": {
       "commandName": "Project",
-      "commandLineArgs": "-h bdcam1 -u admin -p admin -t BD -c Image"
+      "commandLineArgs": "-h bdcam1 -u admin -p admin -t BD -c ImageSnapshot"
     },
     "get SV series test": {
       "commandName": "Project",

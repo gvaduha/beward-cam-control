@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace gvaduha.beward
@@ -233,9 +234,10 @@ namespace gvaduha.beward
             public static string FileList = "/cgi-bin/operator/filelist.cgi";
             public static string Recycle = "/cgi-bin/operator/recycle.cgi";
             public static string DataLoader = "/dataloader.cgi";
-            public static string Snapshot = "/cgi-bin/operator/snapshot.cgi"; // or "/snapshot.cgi"
             public static string Notify = "/cgi-bin/notify.fcgi";
             public static string Audio = "/cgi-bin/audio.fcgi";
+            public static string ImageSnapshotTi = "/cgi-bin/admin/snapshot.cgi"; // Ti
+            public static string ImageSnapshotMSxC = "/snapshot.cgi"; // MSAC, MSHC
         }
 
         public enum CamCommand
@@ -267,6 +269,8 @@ namespace gvaduha.beward
             CameraPtz,
             RecordFileFormat,
             StorageFormat,
+            ImageSnapshotTi,
+            ImageSnapshotMSxC,
         }
 
         private static Dictionary<CamCommand, RequestTraits> nameRequestMap = new Dictionary<CamCommand, RequestTraits>
@@ -294,6 +298,8 @@ namespace gvaduha.beward
             {CamCommand.CameraMaxGain, new RequestTraits(CgiScripts.Operator, "camera.settings.maxgain") },
             {CamCommand.CameraDaynight, new RequestTraits(CgiScripts.Operator, "camera.daynight") },
             {CamCommand.CameraMask, new RequestTraits(CgiScripts.Operator, "camera.mask") },
+            {CamCommand.ImageSnapshotTi, new RequestTraits(CgiScripts.ImageSnapshotTi, "") },
+            {CamCommand.ImageSnapshotMSxC, new RequestTraits(CgiScripts.ImageSnapshotMSxC, "") },
         };
 
         public SVseriesCam(Uri baseUri, string user, string password)
@@ -305,8 +311,16 @@ namespace gvaduha.beward
             var reqTraits = nameRequestMap[command];
             var uri = new Uri(_baseUri, $"{reqTraits.Script}?action=get.{reqTraits.Command}&format={format}");
             Debug.WriteLine(uri);
-            var result = await _httpClient.GetStringAsync(uri);
-            return result;
+            var result = await _httpClient.GetAsync(uri);
+            var charset = result.Content.Headers.ContentType.CharSet;
+
+            if (charset == Encoding.UTF8.WebName)
+                return await result.Content.ReadAsStringAsync();
+            else
+            {
+                var content = await result.Content.ReadAsByteArrayAsync();
+                return Convert.ToBase64String(content);
+            }
         }
 
         public async Task<string> SetSectionAsync(CamCommand command, string[] data)

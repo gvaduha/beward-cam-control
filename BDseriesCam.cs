@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace gvaduha.beward
@@ -46,9 +47,7 @@ namespace gvaduha.beward
             public static string UserInfo = "/cgi-bin/admin/userinfo.cgi";
             public static string Privacy = "/cgi-bin/admin/privacy.cgi";
             public static string Users = "/cgi-bin/admin/pwdgrp.cgi";
-            public static string Snapshot = "/cgi-bin/admin/snapshot.cgi";
-            public static string SnapshotAlt = "/snapshot.cgi";
-            public static string SnapshotImage = "/cgi-bin/admin/image.cgi";
+            public static string ImageSnapshot = "/cgi-bin/jpg/image.cgi";
             public static string StorageManagement = "/cgi-bin/admin/storagemanagement.cgi";
             public static string FactoryDefault = "/cgi-bin/admin/factorydefault.cgi";
             public static string HardFactoryDefault = "/cgi-bin/admin/hardfactorydefault.cgi";
@@ -92,6 +91,7 @@ namespace gvaduha.beward
             NetworkShare,
             Profile,
             ProfileSet,
+            ImageSnapshot,
         }
 
 
@@ -121,6 +121,7 @@ namespace gvaduha.beward
             {CamCommand.NetworkShare, new RequestTraits(CgiScripts.Param, "NetworkShare") },
             {CamCommand.Profile, new RequestTraits(CgiScripts.Param, "Profile") },
             {CamCommand.ProfileSet, new RequestTraits(CgiScripts.CamProfileSelect, "") },
+            {CamCommand.ImageSnapshot, new RequestTraits(CgiScripts.ImageSnapshot, "") },
         };
 
         public BDseriesCam(Uri baseUri, string user, string password)
@@ -133,8 +134,16 @@ namespace gvaduha.beward
             var reqTraits = nameRequestMap[command];
             var uri = new Uri(_baseUri, $"{reqTraits.Script}?action=list&group={reqTraits.Command}");
             Debug.WriteLine(uri);
-            var result = await _httpClient.GetStringAsync(uri);
-            return result;
+            var result = await _httpClient.GetAsync(uri);
+            var charset = result.Content.Headers.ContentType.CharSet;
+
+            if (charset == Encoding.UTF8.WebName)
+                return await result.Content.ReadAsStringAsync();
+            else
+            {
+                var content = await result.Content.ReadAsByteArrayAsync();
+                return Convert.ToBase64String(content);
+            }
         }
 
         public async Task<string> SetSectionAsync(CamCommand command, string[] data)
